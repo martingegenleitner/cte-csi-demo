@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: cte-claim
+  annotations:
+    ctePolicy: op-encrypt-only
+spec:
+  storageClassName: cte-csi-sc
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Gi
+  dataSource:
+    kind: PersistentVolumeClaim
+    name: actual-storage-claim

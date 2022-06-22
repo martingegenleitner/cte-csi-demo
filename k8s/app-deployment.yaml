@@ -1,0 +1,55 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: cte-csi-demo
+  name: cte-csi-demo
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: cte-csi-demo
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: cte-csi-demo
+    spec:
+      nodeSelector:
+        "kubernetes.io/os": linux
+      containers:
+        - image: thalesgegmar/cte-csi-demo:latest
+          name: cte-csi-demo
+          imagePullPolicy: IfNotPresent
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "250m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: uploads
+              mountPath: /srv/upload
+      volumes:
+        - name: uploads
+          persistentVolumeClaim:
+            claimName: cte-claim
+#            claimName: actual-storage-claim # for testing with clear-storage
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cte-csi-demo
+spec:
+  type: NodePort
+  selector:
+    app: cte-csi-demo
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80

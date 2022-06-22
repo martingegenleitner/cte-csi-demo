@@ -1,0 +1,12 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: cte-csi-sc
+provisioner: cte.csi
+reclaimPolicy: Delete
+volumeBindingMode: Immediate
+allowVolumeExpansion: true
+parameters:
+  key_manager_addr: 20.223.197.34 # TO BE SET
+  k8_storage_group: demo-storage-group
+  registration_token: jLCpf9GL4XRmJYSV6EBQqAJwcDvLvBWrc6H1f2sOlCd5vyKtCiWkKU7hzgEQncSU # TO BE SET

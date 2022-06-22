@@ -1,0 +1,13 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: gke-app.az.presales.dev
+  namespace: default
+spec:
+  secretName: gke-app.az.presales.dev-tls
+  issuerRef:
+    name: letsencrypt
+    kind: ClusterIssuer
+  commonName: gke-app.az.presales.dev
+  dnsNames:
+  - gke-app.az.presales.dev

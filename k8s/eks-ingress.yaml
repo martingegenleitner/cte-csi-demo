@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: cte-csi-demo-ingress
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt
+spec:
+  tls:
+  - hosts:
+    - eks-app.az.presales.dev
+    secretName: eks-app.az.presales.dev-tls
+  rules:
+  - host: eks-app.az.presales.dev
+    http:
+      paths:
+      - backend:
+          service:
+            name: cte-csi-demo
+            port:
+              number: 80
+        path: /
+        pathType: Prefix

@@ -86,7 +86,7 @@ az vm image list --offer cm_k170v --all
 az vm image terms accept --urn <image_urn>
 
 # Create vm from image
-az vm create --resource-group MartinGegenleitner --name cm-2 --image thalesdiscplusainc1596561677238:cm_k170v:ciphertrust_manager:2.7.6808 --size Standard_DS3_v2 --admin-username ksadmin --ssh-key-name cm-1_key --public-ip-sku Basic --vnet-name demo_vnet --location northeurope --subnet default
+az vm create --resource-group MartinGegenleitner --name cm-1 --image thalesdiscplusainc1596561677238:cm_k170v:ciphertrust_manager:2.7.6808 --size Standard_DS3_v2 --admin-username ksadmin --ssh-key-name cm-1_key --public-ip-sku Basic --vnet-name demo_vnet --location northeurope --subnet default
 ```
 
 ## Configure the Key Management Service
@@ -125,7 +125,7 @@ kubectl get services
 #############
 
 # Install certmanager for cluster
-kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v1.0.1/cert-manager.yaml
+kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.8.0/cert-manager.yaml
 
 # Create clusterissuer
 kubectl apply -f cluster-issuer.yaml
@@ -160,6 +160,9 @@ kubectl apply -f (eks|gke)-nfs-claim.yaml
 
 # Create the storage class and PVC for CTE CSI
 kubectl apply -f cte-storageclass.yaml
+
+# Create the PVC for the later application
+kubectl apply -f cte-claim.yaml
 
 # Finally deploy the application
 kubectl apply -f app-deployment.yaml

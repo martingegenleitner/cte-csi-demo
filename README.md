@@ -1,6 +1,6 @@
-# Demo App for Information Security World
+# Demo App for CTE for Kubernetes
 
-Small PHP Demo App that stores and displays a simple picture. It will be used to demonstrate transparent encryption of application data in container environments with THALES CipherTrust Transparent Encryption for Container Storage Interface (CTE CSI) on Kubernetes.
+Small Golang Demo App that stores and displays a simple picture. It will be used to demonstrate transparent encryption of application data in container environments with THALES CipherTrust Transparent Encryption for Kubernetes ([CTE for Kubernetes](https://thalesdocs.com/ctp/cte-con/cte-k8s/latest/index.html)).
 
 Watch the [video](demo-video.mkv) to see the final setup in action!
 
@@ -75,6 +75,11 @@ gcloud container clusters get-credentials $(terraform output -raw kubernetes_clu
 # When you are finished using the GKE, destroy it to reduce costs
 terraform destroy
 ```
+
+## Setup NFS Servers in AWS and GCP
+
+Both NFS servers must be configured to accept incoming NFS traffic and store files at `/data`.
+Connect to both servers via SSH and copy+execute the script `${repository_root}/terraform/install_nfs-server.sh` as root (via sudo).
 
 ## Create KMS in Azure
 

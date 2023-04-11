@@ -8,22 +8,22 @@ Small Golang Demo App that stores and displays a simple picture. It will be used
 # Checkout the repo and change into its root directory
 cd cte-csi-demo
 # Build the image
-docker build -t demo-app .
+docker build -t cte-4-k8s-demo .
 # Run the app and listen on the local port 8888
-docker run -d --name demo-app -p 8888:80 demo-app
+docker run -d --name cte-4-k8s-demo -p 8888:80 cte-4-k8s-demo
 # Stop and remove the container and image to clean up
-docker stop demo-app
-docker rm demo-app
-docker rmi demo-app
+docker stop cte-4-k8s-demo
+docker rm cte-4-k8s-demo
+docker rmi cte-4-k8s-demo
 ```
 
 ## Push app to DockerHub
 
 ```shell
 # Build the app with the desired tag
-docker build -t demo-app .
+docker build -t cte-4-k8s-demo .
 # Push the image to the registry
-docker push demo-app
+docker push cte-4-k8s-demo
 ```
 
 ## Create EKS Cluster
@@ -164,7 +164,7 @@ Checkout the repository from <https://github.com/thalescpl-io/cte-csi-deploy> an
 ./deploy.sh
 ```
 
-... in `bash`.
+... in `bash`. This is necessary as PowerShell won't understand the `.sh` script properly. Also the checkout should be done via `bash` in order to have the correct line breaks in all files.
 
 ### Deploy the actual applications
 
@@ -176,6 +176,9 @@ cd cte-csi-demo/k8s
 
 # Deploy the PV and PVC for the actual storage over NFS
 kubectl apply -f (eks|gke)-nfs-claim.yaml
+
+# Create the secret with the regtoken
+kubectl apply -f cte-regtoken.yaml
 
 # Create the storage class and PVC for CTE CSI
 kubectl apply -f cte-storageclass.yaml

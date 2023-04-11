@@ -2,8 +2,6 @@
 
 Small Golang Demo App that stores and displays a simple picture. It will be used to demonstrate transparent encryption of application data in container environments with THALES CipherTrust Transparent Encryption for Kubernetes ([CTE for Kubernetes](https://thalesdocs.com/ctp/cte-con/cte-k8s/latest/index.html)).
 
-Watch the [video](demo-video.mkv) to see the final setup in action!
-
 ## Run the app locally
 
 ```shell
@@ -36,9 +34,19 @@ Terraform files have been stolen from <https://github.com/hashicorp/learn-terraf
 # Move to the terraform files
 cd cte-csi-demo/terraform/eks
 
-# (optional) Ensure you are logged in via AWS CLI
+# (optional) Login and ensure you are logged in via AWS CLI
 aws configure
+# (or via Authv2 and SSO)
+# Configure SSO
+aws configure sso
+# Login via configured SSO if already done before
+aws login sso --profile YOUR_SSO_PROFILE_NAME
+
+# Check your identity with classic credentials (AccessKey)
 aws sts get-caller-identity
+
+# Check your identity with v2 sso credentials
+aws sts get-caller-identity --profile YOUR_SSO_PROFILE_NAME
 
 # Initialize terraform workspace
 terraform init
@@ -81,6 +89,10 @@ terraform destroy
 Both NFS servers must be configured to accept incoming NFS traffic and store files at `/data`.
 Connect to both servers via SSH and copy+execute the script `${repository_root}/terraform/install_nfs-server.sh` as root (via sudo).
 
+For NFS-Server on AWS EC2 use the username "ubuntu" and the private key file of the pubkey file used at `terraform/eks/nfs.tf`.
+
+For NFS-Server on GCP's Compute Engine use the username defined in the file `terraform/gke/terraform.tfvars` with the according private key. In the sample it's also `ubuntu`.
+
 ## Create KMS in Azure
 
 ```shell
@@ -88,11 +100,13 @@ Connect to both servers via SSH and copy+execute the script `${repository_root}/
 az vm image list --offer cm_k170v --all
 
 # Accept the license terms
-az vm image terms accept --urn <image_urn>
+az vm image terms accept --urn thalesdiscplusainc1596561677238:cm_k170v:ciphertrust_manager:2.10.7973
 
 # Create vm from image
-az vm create --resource-group MartinGegenleitner --name cm-1 --image thalesdiscplusainc1596561677238:cm_k170v:ciphertrust_manager:2.7.6808 --size Standard_DS3_v2 --admin-username ksadmin --ssh-key-name cm-1_key --public-ip-sku Basic --vnet-name demo_vnet --location northeurope --subnet default
+az vm create --resource-group MartinGegenleitner --name cm-1 --image thalesdiscplusainc1596561677238:cm_k170v:ciphertrust_manager:2.10.7973 --size Standard_DS3_v2 --admin-username ksadmin --ssh-key-name cm-1_key --public-ip-sku Basic --vnet-name demo_vnet --location northeurope --subnet default
 ```
+
+... or just follow the wizard when deploying a CipherTrust Manager Community Edition (CE) from the Azure Marketplace.
 
 ## Configure the Key Management Service
 
@@ -101,15 +115,15 @@ Perform the following steps on the vanilla CipherTrust-Manager created on Azure 
 1. Perform initial config of the appliance.
    1. Set SSH-key
    2. Set initial admin password
-   3. Configure interface `web` as desired
+   3. Configure interface `web` as desired (e. g. upload a valid certificate or enable cert based auth)
 2. Create a simple registration token in the Menu of Access Management -> Registration Tokens.
-   1. Important: Set the usage limit to a high value as registrations and deregistrations on every creation of a Pod using CTE CSI. Recommondation for PoC: 1000
-3. Configure CTE CSI - change to the CTE product tile
-   1. On the K8s Storage Groups, create a new Storage Group with the following parameters. It is important to choose values that later match the parameter values from `k8s/cte-storageclass.yaml`
-      1. Name = demo-storage-group
-      2. StorageClass = cte-csi-sc
+   1. Important: Set the usage limit to a high value as registrations and deregistrations on every creation of a Pod using CTE for Kubernetes. Recommondation for PoC: 1000
+3. Configure CTE 4 K8s - change to the `Transparent Encryption` product tile
+   1. On the `K8s Storage Groups`, create a new Storage Group with the following parameters. It is important to choose values that later match the parameter values from `k8s/cte-storageclass.yaml`
+      1. Name = myapp-storage-group
+      2. StorageClass = cte-4-k8s-sc
       3. Namespace = default
-   2. Within the new storage group, create a new GuardPolicy of type `Container Storage Interface` and choose the name `op-encrypt-only` as it is important that the name matches the parameter `ctePolicy` in the PVC configured at `k8s/cte-claim.yaml`.
+   2. Within the new storage group, create a new GuardPolicy of type `CTE for Kubernetes` and choose the name `op-encrypt-only` as it is important that the name matches the parameter `csi.cte.cpl.thalesgroup.com/policy` in the PVC configured at `k8s/cte-claim.yaml`. Create a policy with a single Security Rule which permits all access, applies the key and audits every access. Also use a single key rule with a simple AES key (don't use the XTS key!).
 
 ## Deploy the app on Kubernetes
 
@@ -142,12 +156,12 @@ kubectl apply -f (eks|gke)-letsencrypt-cert.yaml
 kubectl apply -f (eks|gke)-ingress.yaml
 ```
 
-### Deploy CTE-CSI Storage driver
+### Deploy CTE for Kubernetes Storage driver
 
 Checkout the repository from <https://github.com/thalescpl-io/cte-csi-deploy> and run...
 
 ```shell
-./deploy.sh -u=thalesctecsi -p=08b2059e-2c46-4439-90ba-1ed9641f71a0
+./deploy.sh
 ```
 
 ... in `bash`.

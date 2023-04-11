@@ -1,12 +1,26 @@
+---
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
-  name: cte-csi-sc
-provisioner: cte.csi
+  name: cte-4-k8s-sc
+provisioner: csi.cte.cpl.thalesgroup.com
 reclaimPolicy: Delete
 volumeBindingMode: Immediate
 allowVolumeExpansion: true
 parameters:
-  key_manager_addr: 20.223.197.34 # TO BE SET
-  k8_storage_group: demo-storage-group
-  registration_token: jLCpf9GL4XRmJYSV6EBQqAJwcDvLvBWrc6H1f2sOlCd5vyKtCiWkKU7hzgEQncSU # TO BE SET
+  # Domain name or IP address of the CiperTrust Manager (Required)
+  key_manager_addr: 20.113.58.180
+
+  # Name of the CipherTrust Manager K8s Storage Group. (Required)
+  k8_storage_group: myapp-storage-group
+
+  # Kubernetes Secret with CM registration token (Required)
+  registration_token_secret: cm-reg-token
+
+  # Small registration description to be displayed in the CiperTrust Manager (Optional)
+  client_description: "Kubernetes Worker-Nodes"
+
+  # Time in minutes to wait before unregistering from the CiperTrust Manager
+  # once all volumes have been unguarded. Parameter must be added as a string
+  # integer value. Default "10" minute. (Optional)
+  registration_period: "10"

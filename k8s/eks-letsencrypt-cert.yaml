@@ -1,13 +1,13 @@
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: eks-app.az.presales.dev
+  name: EKS_SERVICE_FQDN
   namespace: default
 spec:
-  secretName: eks-app.az.presales.dev-tls
+  secretName: EKS_SERVICE_FQDN-tls
   issuerRef:
     name: letsencrypt
     kind: ClusterIssuer
-  commonName: eks-app.az.presales.dev
+  commonName: EKS_SERVICE_FQDN
   dnsNames:
-  - eks-app.az.presales.dev
+  - EKS_SERVICE_FQDN

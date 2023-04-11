@@ -1,13 +1,13 @@
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: gke-app.az.presales.dev
+  name: GKE_SERVICE_FQDN
   namespace: default
 spec:
-  secretName: gke-app.az.presales.dev-tls
+  secretName: GKE_SERVICE_FQDN-tls
   issuerRef:
     name: letsencrypt
     kind: ClusterIssuer
-  commonName: gke-app.az.presales.dev
+  commonName: GKE_SERVICE_FQDN
   dnsNames:
-  - gke-app.az.presales.dev
+  - GKE_SERVICE_FQDN

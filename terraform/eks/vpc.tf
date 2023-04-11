@@ -5,6 +5,7 @@ variable "region" {
 
 provider "aws" {
   region = var.region
+  profile = "sso"
 }
 
 data "aws_availability_zones" "available" {}

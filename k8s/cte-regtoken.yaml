@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: cm-reg-token
+type: Opaque
+data:
+  # This is a base64 encoded registration token.  To generate:
+  # echo <CM REGISTRATION TOKEN STRING> | base64 -w 0
+  registration_token: aWpPUkRoNU8zQlBTbjdwdmxITXAxZVBrSm1lYlU3UGJSNjZFQjQxYWZZcjhKc1p0UXVkNDg0aVlsMzdwc0NVNw==

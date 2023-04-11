@@ -1,16 +1,22 @@
+---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: cte-claim
   annotations:
-    ctePolicy: op-encrypt-only
+    # CTE for Kubernetes GuardPolicy name. This GuardPolicy is located on the
+    # CipherTrust Manager and should match a policy name available on the
+    # storage class for this PVC. (Required)
+    csi.cte.cpl.thalesgroup.com/policy: op-encrypt-only
+
+    # Name of the unprotected source PVC that will be protected by this CTE-PVC.
+    # (Required)
+    csi.cte.cpl.thalesgroup.com/source_pvc: actual-storage-claim
 spec:
-  storageClassName: cte-csi-sc
+  storageClassName: cte-4-k8s-sc
   accessModes:
     - ReadWriteMany
   resources:
     requests:
-      storage: 1Gi
-  dataSource:
-    kind: PersistentVolumeClaim
-    name: actual-storage-claim
+      # This parameter is required by Kubernetes but ignored by CTE-CSI.
+      storage: 1Ki

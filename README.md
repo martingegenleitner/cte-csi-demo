@@ -6,7 +6,7 @@ Small Golang Demo App that stores and displays a simple picture. It will be used
 
 ```shell
 # Checkout the repo and change into its root directory
-cd cte-csi-demo
+cd REPO_ROOT
 # Build the image
 docker build -t cte-4-k8s-demo .
 # Run the app and listen on the local port 8888
@@ -32,7 +32,7 @@ Terraform files have been stolen from <https://github.com/hashicorp/learn-terraf
 
 ```shell
 # Move to the terraform files
-cd cte-csi-demo/terraform/eks
+cd REPO_ROOT/terraform/eks
 
 # (optional) Login and ensure you are logged in via AWS CLI
 aws configure
@@ -40,7 +40,7 @@ aws configure
 # Configure SSO
 aws configure sso
 # Login via configured SSO if already done before
-aws login sso --profile YOUR_SSO_PROFILE_NAME
+aws sso login --profile YOUR_SSO_PROFILE_NAME
 
 # Check your identity with classic credentials (AccessKey)
 aws sts get-caller-identity
@@ -55,6 +55,8 @@ terraform apply
 
 # Merge k8s context to use EKS with kubectl
 aws eks --region $(terraform output -raw region) update-kubeconfig --name $(terraform output -raw cluster_name)
+# Append '--profile' when using with SSO
+aws eks --region $(terraform output -raw region) update-kubeconfig --name $(terraform output -raw cluster_name) --profile YOUR_SSO_PROFILE_NAME
 
 # When you are finished using the EKS, destroy it to reduce costs
 terraform destroy
@@ -66,7 +68,7 @@ Terraform files have been stolen from <https://github.com/hashicorp/learn-terraf
 
 ```shell
 # Move to the terraform files
-cd cte-csi-demo/terraform/gke
+cd REPO_ROOT/terraform/gke
 
 # Ensure your gcloud is initialized and connected to your account
 gcloud init
@@ -87,7 +89,7 @@ terraform destroy
 ## Setup NFS Servers in AWS and GCP
 
 Both NFS servers must be configured to accept incoming NFS traffic and store files at `/data`.
-Connect to both servers via SSH and copy+execute the script `${repository_root}/terraform/install_nfs-server.sh` as root (via sudo).
+Connect to both servers via SSH and copy+execute the script `REPO_ROOT/terraform/install_nfs-server.sh` as root (via sudo).
 
 For NFS-Server on AWS EC2 use the username "ubuntu" and the private key file of the pubkey file used at `terraform/eks/nfs.tf`.
 
@@ -115,7 +117,8 @@ Perform the following steps on the vanilla CipherTrust-Manager created on Azure 
 1. Perform initial config of the appliance.
    1. Set SSH-key
    2. Set initial admin password
-   3. Configure interface `web` as desired (e. g. upload a valid certificate or enable cert based auth)
+   3. Go to Licensing and activate the 90-days-trail license. Else we would only be able to register up to 3 worker nodes, but in this setup we need 4.
+   4. Configure interface `web` as desired (e. g. upload a valid certificate or enable cert based auth)
 2. Create a simple registration token in the Menu of Access Management -> Registration Tokens.
    1. Important: Set the usage limit to a high value as registrations and deregistrations on every creation of a Pod using CTE for Kubernetes. Recommondation for PoC: 1000
 3. Configure CTE 4 K8s - change to the `Transparent Encryption` product tile
@@ -147,12 +150,15 @@ kubectl get services
 kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.8.0/cert-manager.yaml
 
 # Create clusterissuer
+# TODO: Replace the placeholder YOUR_EMAIL_ADDRESS with your actual address to receive notifications on cert states
 kubectl apply -f cluster-issuer.yaml
 
 # Create certificate
+# TODO: Replace the placeholder EKS_SERVICE_FQDN with the DNS name you set before for your app
 kubectl apply -f (eks|gke)-letsencrypt-cert.yaml
 
 # Create ingress
+# TODO: Replace the placeholder EKS_SERVICE_FQDN with the DNS name you set before for your app
 kubectl apply -f (eks|gke)-ingress.yaml
 ```
 
@@ -166,26 +172,42 @@ Checkout the repository from <https://github.com/thalescpl-io/cte-csi-deploy> an
 
 ... in `bash`. This is necessary as PowerShell won't understand the `.sh` script properly. Also the checkout should be done via `bash` in order to have the correct line breaks in all files.
 
+If you use Windows Subsystem for Linux (WSL) and you had your kubectl on powershell first, you can set the same kube-config for your WSL environment by setting it via environment variable: `export KUBECONFIG=/mnt/c/Users/<YOUR_USER_ACCOUNT/.kube/config`
+
 ### Deploy the actual applications
 
 Before you begin to apply configuration to the cluster, make sure the files `k8s/cte-storageclass.yaml` and `k8s/cte-claim.yaml` contain the correct values from your key management setup!
 
 ```shell
 # Ensure to be in the correct directory
-cd cte-csi-demo/k8s
+cd REPO_ROOT/k8s
 
 # Deploy the PV and PVC for the actual storage over NFS
 kubectl apply -f (eks|gke)-nfs-claim.yaml
 
 # Create the secret with the regtoken
+# TODO: Update the base64-string with the regtoken you created earlier on CipherTrust Manager
 kubectl apply -f cte-regtoken.yaml
 
 # Create the storage class and PVC for CTE CSI
+# TODO: Update the 'key_manager_addr' to your CipherTrust Manager's IP or FQDN.
+#       (When you have a CM-Cluster, simply add a single cluster node's IP or FQDN. The other nodes' addresses get pushed to CTE during registration)
 kubectl apply -f cte-storageclass.yaml
 
 # Create the PVC for the later application
 kubectl apply -f cte-claim.yaml
 
 # Finally deploy the application
+# TODO: If you have pushed the app previously to your own container registry, update the 'image' property of the deployment.
 kubectl apply -f app-deployment.yaml
 ```
+
+## Decommission setup
+
+### GCP
+
+Run `terraform destroy` in `REPO_ROOT/terraform/gke/` to delete all provisioned GCP resources.
+
+### AWS
+
+Delete Loadbalancer created by Kubernetes and detach the internet gateway from the VPC. Else `terraform destroy` gets stuck on the attempt to delete the VPC.
